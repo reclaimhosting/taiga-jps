@@ -1,0 +1,48 @@
+type: install
+id: taiga
+name: Taiga
+homepage: https://taiga.io/
+baseUrl: https://raw.githubusercontent.com/reclaimhosting/taiga-jps/master
+logo: images/taiga-logo.svg
+
+description: 
+  text: Taiga is the project management tool for multi-functional agile teams. It has a rich feature set and at the same time it is very simple to start with through its intuitive user interface.
+  
+categories:
+- apps/popular
+- apps/collaboration
+
+nodes:
+  nodeType: dockerengine
+  nodeGroup: cp
+  cloudlets: 16
+  extip: false
+  displayName: Taiga Server
+
+onInstall: setup
+
+actions:
+  setup:
+    cmd[cp]: |-
+      git clone https://github.com/docker-taiga/taiga.git && cd taiga;
+      sed -i 's|taiga.lan|${env.domain}|g' variables.env;
+      sed -i 's|http|https|g' variables.env;
+      docker-compose up -d;
+
+      #Checking of container is up and running 
+      until [ "`/usr/bin/docker inspect -f {{.State.Running}} proxy`"=="true" ]; do
+        sleep 1
+        print '.'
+      done;
+
+      echo OK
+
+ssl: true
+skipNodeEmails: true
+    
+success: | 
+  **Access URL**: [https://${env.domain}/](https://${env.domain}/)  
+  **Username**: admin
+  **Password**: 123123
+  
+  System may take a few minutes to fully be online. Be sure to update your admin user profile upon first login.
